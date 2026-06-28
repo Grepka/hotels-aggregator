@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Query, Body
+from pydantic import BaseModel
 
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
@@ -25,29 +26,29 @@ async def get_hotels(
         hotels_.append(hotel)
     return hotels_
 
+class Hotels(BaseModel):
+    name: str
+    city: str
+
+
 @router.post("/")
-async def add_hotel(
-        name: str = Body(embed=True)
-):
+async def add_hotel(hotel_data: Hotels):
     global hotels_list
     id = hotels_list[-1]["id"] + 1
     hotels_list.append({
         "id": id,
-        "name": name
+        "name": hotel_data.name,
+        "city": hotel_data.city
     })
     return {"result": "ok"}
 
 @router.put("/{hotel_id}")
-async def reload_hotel(
-        hotel_id: int,
-        name: str = Body(),
-        city: str = Body()
-) -> dict:
+async def reload_hotel(hotel_id: int, hotels_data = Hotels) -> dict:
     global hotels_list
     for hotel in hotels_list:
         if hotel["id"] == hotel_id:
-            hotel["name"] = name
-            hotel["city"] = city
+            hotel["name"] = hotels_data.name
+            hotel["city"] = hotels_data.city
             return {"result": "ok"}
 
     return {"result": "not ok"}
