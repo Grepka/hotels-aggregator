@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from sqlalchemy import select, insert, func
+
 
 from src.database import async_session_maker
 from src.schemas.hotel import Hotel, HotelPATCH
@@ -30,10 +30,9 @@ async def get_hotels(
 @router.post("")
 async def create_hotel(hotel_data: Hotel):
     async with async_session_maker() as session:
-        add_hotel_stm = insert(HotelOrm).values(**hotel_data.model_dump())
-        await session.execute(add_hotel_stm)
+        hotel = await HotelRepository(session).add(hotel_data)
         await session.commit()
-    return {"result": "ok"}
+        return {"result": "ok", "data": hotel}
 
 @router.put("/{hotel_id}")
 async def reload_hotel(hotel_id: int, hotels_data: Hotel) -> dict:
