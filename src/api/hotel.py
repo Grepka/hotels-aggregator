@@ -1,7 +1,11 @@
 from typing import List
 from fastapi import APIRouter, Query
+from sqlalchemy import insert
+
+from src.database import async_session_maker
 from src.schemas.hotel import Hotel, HotelPATCH
 from src.api.dependencies import PaginationDepends
+from src.models.hotel import HotelOrm
 
 
 
@@ -52,14 +56,11 @@ async def get_hotels(
     return hotels_
 
 @router.post("")
-async def add_hotel(hotel_data: Hotel):
-    global hotels_list
-    id = hotels_list[-1]["id"] + 1
-    hotels_list.append({
-        "id": id,
-        "name": hotel_data.name,
-        "city": hotel_data.city
-    })
+async def create_hotel(hotel_data: Hotel):
+    async with async_session_maker() as session:
+        add_hotel_stm = insert(HotelOrm).values(**hotel_data.model_dump())
+        await session.execute(add_hotel_stm)
+        await session.commit()
     return {"result": "ok"}
 
 @router.put("/{hotel_id}")
