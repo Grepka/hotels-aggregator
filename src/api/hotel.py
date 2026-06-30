@@ -10,6 +10,12 @@ from src.repositories.hotel import HotelRepository
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
 
+@router.get("/{hotel_id}")
+async def get_hotel_by_id(hotel_id: int):
+    async with async_session_maker() as session:
+        hotel = await HotelRepository(session).get_one_or_none(id=hotel_id)
+        return {"result": "OK", "data": hotel}
+
 @router.get("")
 async def get_hotels(
         pagination: PaginationDepends,
@@ -31,27 +37,23 @@ async def create_hotel(hotel_data: Hotel):
     async with async_session_maker() as session:
         hotel = await HotelRepository(session).add(hotel_data)
         await session.commit()
-        return {"result": "ok", "data": hotel}
+        return {"result": "OK", "data": hotel}
 
 @router.put("/{hotel_id}")
-async def reload_hotel(hotel_id: int, hotels_data: Hotel) -> dict:
-    global hotels_list
-    for hotel in hotels_list:
-        if hotel["id"] == hotel_id:
-            hotel["name"] = hotels_data.name
-            hotel["city"] = hotels_data.city
-            return {"result": "ok"}
-
-    return {"result": "not ok"}
+async def reload_hotel(hotel_id: int, hotels_data: Hotel):
+    async with async_session_maker() as session:
+        await HotelRepository(session).edit(hotels_data, exclude_unset=False, id=hotel_id)
+        await session.commit()
+        return {"result": "OK"}
 
 @router.patch(
     "/{hotel_id}",
         summary="Частичное обновление данных об отеле",
         description="Тут частично обновляем данные об отеле"
 )
-async def edit_hotel(hotel_id: int, hotels_data: HotelPATCH) -> dict:
+async def edit_hotel(hotel_id: int, hotels_data: HotelPATCH):
     async with async_session_maker() as session:
-        await HotelRepository(session).edit(hotels_data, id=hotel_id)
+        await HotelRepository(session).edit(hotels_data, exclude_unset=True, id=hotel_id)
         await session.commit()
         return {"result": "OK"}
 
