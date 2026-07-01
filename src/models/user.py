@@ -5,7 +5,7 @@ from src.database import Base
 
 
 
-class User(Base):
+class UserOrm(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
