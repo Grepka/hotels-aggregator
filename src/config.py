@@ -12,9 +12,12 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_HOST: str
     POSTGRES_PORT: int = 5432
-    JWT_SECRET: str
 
     model_config = SettingsConfigDict(env_file=ENV_PATH)
+
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     @property
     def get_db_url(self):
