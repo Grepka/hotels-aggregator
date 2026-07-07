@@ -1,4 +1,5 @@
 import jwt
+from fastapi import HTTPException
 from pwdlib import PasswordHash
 from datetime import datetime, timedelta, timezone
 
@@ -24,4 +25,7 @@ class AuthService:
 
     @staticmethod
     def encode_access_token(token: str) -> dict:
-        return jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        try:
+            return jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        except jwt.exceptions.DecodeError:
+            raise HTTPException(status_code=401, detail="Invalid token format")
