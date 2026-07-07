@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, Request, status
 
 from src.database import async_session_maker
 from src.schemas.user import UserRequestAdd, UserAdd
@@ -39,3 +39,15 @@ async def login_user(data: UserRequestAdd, response: Response):
         access_token = AuthService().create_access_token({"user_id": user.id})
         response.set_cookie("access_token", access_token)
         return {"access_token": access_token}
+
+@router.post("/only_auth")
+async def only_auth(request: Request):
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        return HTTPException(status_code=401, detail="Access token is invalid")
+    data = AuthService().encode_access_token(access_token)
+    user_id = data.get("user_id")
+    if not user_id:
+        return HTTPException(status_code=401, detail="Access token is invalid")
+    async with async_session_maker() as session:
+        return await UserRepositories(session).get_one_or_none(id=user_id)
