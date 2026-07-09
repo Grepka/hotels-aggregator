@@ -8,8 +8,7 @@ class UserRequestAdd(BaseModel):
 
 class UserAdd(BaseModel):
     email: EmailStr
-    # Переименовать хешированный при следующей миграции
-    password: str
+    hashed_password: str
 
 
 class User(BaseModel):
@@ -17,5 +16,5 @@ class User(BaseModel):
     email: EmailStr
 
 class UserWithHashPassword(User):
-    password: str
+    hashed_password: str
 

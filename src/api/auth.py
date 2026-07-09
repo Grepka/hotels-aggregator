@@ -13,7 +13,7 @@ router = APIRouter(prefix="/auth", tags=["Аутентификация и авт
 @router.post("/register")
 async def create_user(user_data: UserRequestAdd):
     hashed_password = AuthService().hash_password(user_data.password)
-    new_user_data = UserAdd(email=user_data.email, password=hashed_password)
+    new_user_data = UserAdd(email=user_data.email, hashed_password=hashed_password)
     async with async_session_maker() as session:
         is_exist = await UserRepositories(session).check_exist(user_data.email)
         if is_exist:
@@ -32,7 +32,7 @@ async def login_user(data: UserRequestAdd, response: Response):
         if not user:
             return HTTPException(status_code=401, detail="User does not exist")
 
-        if not AuthService().verify_password(data.password, user.password):
+        if not AuthService().verify_password(data.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password",
