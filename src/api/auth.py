@@ -43,6 +43,12 @@ async def login_user(data: UserRequestAdd, response: Response):
         return {"access_token": access_token}
 
 
+@router.post("/logout")
+async def logout_user(response: Response):
+    response.delete_cookie("access_token")
+    return{"result": "OK"}
+
+
 @router.post("/me")
 async def me(user_id: UserIdDep):
     async with async_session_maker() as session:
