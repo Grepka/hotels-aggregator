@@ -9,17 +9,8 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_one_or_none(self, **kwargs):
-        query = select(self.model).filter_by(**kwargs)
-        result = await self.session.execute(query)
-        if result is None:
-            return None
-        return self.schema.model_validate(
-            result.scalars().one_or_none(),
-            from_attributes=True
-        )
 
-    async def get_all(self, **kwargs):
+    async def get_filtered(self, **kwargs):
         query = select(self.model).filter_by(**kwargs)
         result = await self.session.execute(query)
         return [
@@ -29,6 +20,19 @@ class BaseRepository:
             )
             for schema in result.scalars().all()
         ]
+
+    async def get_all(self, *args, **kwargs):
+        return self.get_filtered()
+
+    async def get_one_or_none(self, **kwargs):
+        query = select(self.model).filter_by(**kwargs)
+        result = await self.session.execute(query)
+        if result is None:
+            return None
+        return self.schema.model_validate(
+            result.scalars().one_or_none(),
+            from_attributes=True
+        )
 
     async def add(self, data: BaseModel):
         add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
