@@ -13,6 +13,7 @@ class BaseRepository:
     async def get_filtered(self, **kwargs):
         query = select(self.model).filter_by(**kwargs)
         result = await self.session.execute(query)
+
         return [
             self.schema.model_validate(
                 schema,
@@ -22,7 +23,7 @@ class BaseRepository:
         ]
 
     async def get_all(self, *args, **kwargs):
-        return self.get_filtered()
+        return await self.get_filtered()
 
     async def get_one_or_none(self, **kwargs):
         query = select(self.model).filter_by(**kwargs)
