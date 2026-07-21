@@ -13,29 +13,14 @@ class HotelRepository(BaseRepository):
     schema = Hotel
 
 
-    # async def get_all(
-    #         self,
-    #         title,
-    #         location,
-    #         per_page,
-    #         offset
-    # ):
-    #     query = select(self.model)
-    #     if title is not None:
-    #         query = query.filter(func.lower(self.model.title).contains(title.lower()))
-    #     if location is not None:
-    #         query = query.filter(func.lower(self.model.location).contains(location.lower()))
-    #     query = query.limit(per_page).offset(offset)
-    #     result = await self.session.execute(query)
-    #     return [
-    #         self.schema.model_validate(model, from_attributes=True)
-    #         for model in result.scalars().all()
-    #     ]
-
     async def filtered_by_time(
             self,
             date_from: date,
-            date_to: date
+            date_to: date,
+            per_page: int,
+            offset: int,
+            title: str | None = None,
+            location: str | None = None,
     ):
         rooms_id_to_get = rooms_id_for_booking(date_from, date_to)
         hotels_id = (
@@ -43,6 +28,26 @@ class HotelRepository(BaseRepository):
             .select_from(RoomOrm)
             .filter(RoomOrm.id.in_(rooms_id_to_get))
         )
-        return await self.get_filtered(HotelOrm.id.in_(hotels_id))
+
+        query = select(HotelOrm).filter(HotelOrm.id.in_(hotels_id))
+
+        if title is not None:
+            query = query.filter(func.lower(self.model.title).contains(title.lower()))
+        if location is not None:
+            query = query.filter(func.lower(self.model.location).contains(location.lower()))
+
+        query = (
+            query
+            .limit(per_page)
+            .offset(offset)
+        )
+        result = await self.session.execute(query)
+        return [
+            self.schema.model_validate(model, from_attributes=True)
+            for model in result.scalars().all()
+        ]
+
+
+
 
 

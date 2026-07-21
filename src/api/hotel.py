@@ -20,16 +20,18 @@ async def get_hotels(
         db: DBDep,
         date_from: date,
         date_to: date,
-        # title: str=Query(default=None, description="Название отеля"),
-        # location: str=Query(default=None, description="Адрес"),
+        title: str=Query(default=None, description="Название отеля"),
+        location: str=Query(default=None, description="Адрес"),
 ):
         per_page = pagination.per_page or 5
         return await db.hotels.filtered_by_time(
             date_from=date_from,
-            date_to=date_from
+            date_to=date_to,
+            title=title,
+            location=location,
+            per_page=per_page,
+            offset=per_page * (pagination.page - 1)
         )
-
-
 
 @router.post("")
 async def create_hotel(db: DBDep, hotel_data: HotelAdd = Body()):

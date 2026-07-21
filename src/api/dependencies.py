@@ -9,7 +9,7 @@ from src.utils.db_manager import DBManager
 
 
 class PagePagination(BaseModel):
-    page: Annotated[int | None, Query(default=1, ge=1, le=100)]
+    page: Annotated[int, Query(default=1, ge=1, le=100)]
     per_page: Annotated[int | None, Query(default=None, ge=5, le=100)]
 
 PaginationDepends = Annotated[PagePagination, Depends()]
