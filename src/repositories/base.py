@@ -10,8 +10,12 @@ class BaseRepository:
         self.session = session
 
 
-    async def get_filtered(self, **kwargs):
-        query = select(self.model).filter_by(**kwargs)
+    async def get_filtered(self, *args, **kwargs):
+        query = (
+            select(self.model)
+            .filter(*args)
+            .filter_by(**kwargs)
+        )
         result = await self.session.execute(query)
 
         return [
